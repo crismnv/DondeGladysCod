@@ -9,18 +9,24 @@
           <div class="card-header">Ventas</div>
           <div class="card-body">
             <h5 class="card-title">CrismnV</h5>
-            <p class="card-text ">Tu deuda es: S./{{this.deuda}}</p>
+            <p class="card-text " >Tu deuda es: S./{{this.deuda[0]['.value']}}</p>
+            <!-- <p class="card-text " v-else>Tu deuda es: S./ 0.00</p> -->
           </div>
         </div>
       </div>
       <div class="col-sm-4">
         <img src="http://www.freepngimg.com/download/coke/1-2-coca-cola-png-clipart.png" class="img-fluid" width="200" height="200" alt="Donde">
-        
+      </div>
+    </div>
+    <br>
+    <div class="row" v-if="this.deuda[0]['.value'] > 0">
+      <div class="col-sm-6 offset-sm-3">
+        <button ref="botonMostrarModalPagar"  data-toggle="modal" data-target="#pagarModal" class="btn btn-block btn-danger">Pagar Deuda</button>
       </div>
     </div>
 
     <div id="botonesOcultos" style="display: none;">
-          <button ref="botonMostrarModalBorrar"  data-toggle="modal" data-target="#borrarModal" class=" bg-light btn" ><i class="fas fa-plus-circle fa-3x"></i></button>
+          <button ref="botonBorrarModal"  data-toggle="modal" data-target="#borrarModal" class=" bg-light btn" ><i class="fas fa-plus-circle fa-3x"></i></button>
       
     </div>
     <br>
@@ -76,7 +82,7 @@
                 <h2>¿Estas seguro que quieres borrar la venta {{ventaSeleccionada.nombre}} de <span v-if="ventaSeleccionada.tamaño"> {{ventaSeleccionada.tamaño}}LT</span></h2>
                 <div class="col-sm-7 offset-sm-3">
                   <button type="button" class="btn btn-danger" data-dismiss="modal" ref="botonCancelarBorrar">NO</button>
-                  <button type="submit" class="btn btn-success" >SI</button>
+                  <button type="submit" class="btn btn-success">SI</button>
                 </div>
               </div>
             </div>
@@ -85,41 +91,83 @@
       </div>
 
       <!-- FIN MODAL BORRAR -->
+
+       <!-- MODAL DE DEUDA -->
+      <div class="modal fade" id="pagarModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <form @submit.prevent="cancelarDeuda">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Pagar Deuda</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <h2>¿Cuánto pagarás?</h2>
+                <input v-model="pago" type="number" step="0.1" class="form-control" min="0.1" :max="this.deuda[0]['.value']">
+                <div class="col-sm-7 offset-sm-3">
+                  <button type="button" class="btn btn-danger" data-dismiss="modal" ref="borrar">REGRESAR</button>
+                  <button type="submit" class="btn btn-success" >PAGAR</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- FIN MODAL DE DEUDA -->
   </div>
 </template>
 
 <script>
-import {dbRefVentas} from '../helpers/firebase';
+import {dbRefVentas, dbRefDeuda} from '../helpers/firebase';
 export default {
   name: 'ventas',
   firebase:
   {
-    ventas: dbRefVentas
+    ventas: dbRefVentas,
+    deuda: dbRefDeuda
   },
   data()
   {
     return {
        mensajeExito: '',
       mensajeError: '',
-      ventaSeleccionada: {}
+      ventaSeleccionada: {},
+      pago: 0
     }
   },
-  // mounted()
+  // computed:
   // {
-  //   console.log(this.ventas)
-  //   for (let i in this.ventas)
+  //   deudaMostrar()
   //   {
-  //     console.log(this.ventas[i].precio)
+  //     return
   //   }
   // },
+  beforeMount()
+  {
+    console.log("--deuda--")
+    console.log(this.deuda)
+    
+  },
   methods: 
   {
+    cancelarDeuda()
+    {
+      dbRefDeuda.update({
+        value: this.deuda[0]['.value'] - this.pago
+      })
+      .then( ()=> this.setMensajes(true, "¡Se realizó el pago con exito!"))
+      .catch( ()=> this.setMensajes(false, "¡No se pudo realizar el pago correctamente!"));
+      this.$refs.borrar.click()
+    },
     seleccionarVenta(accion, venta)
     {
       if (accion === 'borrar') 
       {
         this.ventaSeleccionada = venta
-        this.$refs.botonMostrarModalBorrar.click()
+        this.$refs.botonBorrarModal.click()
         // this.eliminarVenta()
       }
     },
@@ -130,7 +178,10 @@ export default {
       .remove()
       .then( ()=> this.setMensajes(true, "¡Venta eliminada con exito!"))
       .catch( ()=> this.setMensajes(false, "¡No se pudo eliminar la venta correctamente!"));
+
+
       this.$refs.botonCancelarBorrar.click()
+      // this.$refs.botonOcultarModalBorrar.click()
     },
     setMensajes(error, mensaje)
     {
@@ -147,19 +198,6 @@ export default {
       }, 2500);
     }
     
-  },
-  computed:
-  {
-    deuda()
-    {
-      let d = 0
-      for (let i in this.ventas)
-      {
-        console.log(d)
-        d += parseFloat(this.ventas[i].precio)
-      }
-      return d
-    }
   }
 }
 </script>

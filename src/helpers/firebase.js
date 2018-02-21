@@ -13,3 +13,6 @@ const app = initializeApp({
 export const db = app.database()
 export const dbRefProductos = db.ref('data').child('productos')
 export const dbRefVentas = db.ref('data').child('ventas')
+export const dbRefDeuda = db.ref('data').child('deuda')
+export const storageRef  = app.storage().ref().child('prueba')
+// export const authFire  = new firebase.auth.GoogleAuthProvider();

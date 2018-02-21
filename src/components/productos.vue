@@ -210,7 +210,7 @@
 </template>
 
 <script>
-import {dbRefProductos, dbRefVentas} from "../helpers/firebase"
+import {dbRefProductos, dbRefVentas, dbRefDeuda} from "../helpers/firebase"
 
 
 
@@ -220,7 +220,13 @@ export default {
   firebase: 
   {
     productos: dbRefProductos
-    .orderByValue()
+    .orderByValue(),
+    deuda: dbRefDeuda
+  },
+  mounted()
+  {
+    console.log(">>>>>>>>>>>>>>>>>>>")
+    console.log(this.deuda)
   },
   data() {
     return {
@@ -230,6 +236,18 @@ export default {
     };
   },
   methods: {
+    aumentarDeuda(precio)
+    {
+      dbRefDeuda.update({
+        'value': this.deuda[0]['.value'] + precio
+      }).then( () => {
+        console.log('update successfull')
+      })
+      .catch( () => {
+        console.log('wrong update')
+        
+      })
+    },
     seleccionarProducto(accion, producto)
     {
       this.productoSeleccionado = producto
@@ -266,11 +284,13 @@ export default {
       dbRefProductos
       .push({
           nombre: formData.get("nombre"),
-        tamaño: formData.get("tamaño"),
-        precio: formData.get("precio")
+          tamaño: formData.get("tamaño"),
+          precio: formData.get("precio")
       })
       .then( ()=> this.setMensajes(true, "¡Producto agregado con exito!"))
       .catch( ()=> this.setMensajes(false, "¡No se pudo agregar el producto correctamente!"));
+
+      
       this.$refs.botonCancelarAgregar.click()
       
     },
@@ -280,18 +300,29 @@ export default {
       // let formData = new FormData(e.target);
       let f =  new Date();
       let fecha = (f.getDate() + "/" + (f.getMonth() +1) + "/" + f.getFullYear());
-      let hora = f.getHours()+":"+f.getMinutes()+":"+f.getSeconds();  
+      let hora = f.getHours()+":"+f.getMinutes()+":"+ f.getSeconds();  
       // alert (fecha)
+      let deudaActual = parseFloat(this.deuda);
+      console.log("--------------")
+      console.log(deudaActual)
+      let precio =  parseFloat(this.productoSeleccionado.precio);
+      // let deuda = deudaActual + precio
+
       dbRefVentas
       .push({
         nombre: this.productoSeleccionado.nombre,
         tamaño: this.productoSeleccionado.tamaño,
-        precio: this.productoSeleccionado.precio,
+        precio,
         fecha,
         hora
       })
       .then( ()=> this.setMensajes(true, "¡Comprado exitosamente!"))
       .catch( ()=> this.setMensajes(false, "¡No se pudo comprar el producto !"));
+
+      this.aumentarDeuda(precio)
+      // dbRefDeuda
+      // .update({deuda})
+
       this.$refs.botonCancelarComprar.click()
     },
     editarProducto() 
