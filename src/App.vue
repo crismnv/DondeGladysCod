@@ -57,30 +57,17 @@
         </ul>
 			</div>
 		</nav>
-    <!-- <div class="row" v-if="!logueado">
-      <div class="col-sm-6 offset-sm-3">
-        <button 
-        @click="login"
-        class="btn btn-block">
-          <i class="fab fa-google"></i> Loguearse con Google <i class="fab fa-google"></i>
-        </button></div>
-    </div>
-    <div class="row" v-if="logueado">
-      <div class="col-sm-6 offset-sm-3">
-        <button 
-        @click="logout"
-        class="btn btn-block">
-          <i class="fab fa-google"></i> Logout <i class="fab fa-google"></i>
-        </button></div>
-    </div> -->
-    <router-view></router-view>
+    
     <!-- <div class="row">
       <div class="col-sm-6 offset-sm-3">
         <label for="">IMG</label>
-        <input  @change="cambioImagen" type="file" name="foto" id="foto" accept="image/*" >
-  
+        <input  type="file" name="foto" id="foto" accept="image/*" >
+        <button 
+        @click="cambioImagen"
+        class="btn btn-block">Subir</button>
       </div>
     </div> -->
+    <router-view></router-view>
   </div>
 </template>
 
@@ -91,7 +78,6 @@ import  Productos  from "./components/Productos";
 import  loginIncorrecto  from "./components/loginIncorrecto";
 import  Ventas  from "./components/Ventas";
 import firebase from 'firebase'
-import {storageRef} from './helpers/firebase'
 
 Vue.use(VueRouter)
 
@@ -149,30 +135,6 @@ export default {
   },
   mounted()
   {
-    // let user = firebase.auth().currentUser;
-    // console.log('usuario actual')
-    // console.log(user)
-
-    // if(user != null)
-    // {
-    //   this.idUsuario = user.uid
-    //   this.nombreUsuario = user.displayName
-    //   if (this.idUsuario === 'BzJUlIYvflZ5bviyI3SOE9zSRw32') 
-    //   {
-    //     console.log('>>USUARIO ES CRISMNV Y TODO BIEN')
-    //     this.logueado = true
-    //     todoCorrecto = true
-    //     this.$router.push('/ventas')
-          
-    //   }else{
-    //     console.log('>>USUARIO NO ES CRISMNV')
-    //     this.logueado = false
-    //     todoCorrecto = false  
-    //   }
-    // }else{
-    //   console.log('no hay ningun usuario logueado')
-    // }
-
 
       firebase.auth()
       .onAuthStateChanged((user) =>  {
@@ -203,25 +165,6 @@ export default {
   },
   methods:
   {
-    cambioImagen()
-    {
-      let file = document.querySelector('input[type=file]').files[0];
-      storageRef.put(file).then(function(snapshot) {
-              console.log('Uploaded a base64 string!');
-            });
-      // if (file) {
-      //   var reader = new FileReader();
-      //   reader.readAsDataURL(file);
-      //   reader.onload = function(e) {
-      //       // browser completed reading file - display it
-      //       let message = e.target.result
-      //       console.log(message)
-      //       storageRef.put(message).then(function(snapshot) {
-      //         console.log('Uploaded a base64 string!');
-      //       });
-      //   };
-      // }
-    },
     login()
     {
 

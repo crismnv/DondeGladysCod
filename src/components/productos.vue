@@ -62,7 +62,7 @@
             <tbody>
               <tr class="" v-for="producto in productos" :key="producto.id">
                 <td>{{producto.nombre}}</td>
-                <td>{{producto.tamaño}} Lt</td>
+                <td>{{producto.tamaño + ' ' + producto.umed}}</td>
                 <td>S./ {{producto.precio}}</td>
                 <td>
                   <a class="btn" @click="seleccionarProducto('comprar', producto)">
@@ -105,6 +105,22 @@
                   <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                 </div>
                 <div class="form-group">
+                  <label for="exampleInputEmail1">Unidad De Medida</label>
+                  <!-- <input  type="number" name="tamaño" class="form-control" id="exampleInputEmail1" aria-describedby="Tamaño" placeholder="Tamaño del Producto" step="0.01" min="0"> -->
+                  <select class="form-control" name="umed" id="umed">
+                    <option value="mg">mg</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="ml">ml</option>
+                    <option value="l">l</option>
+                  </select>
+                  <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                </div>
+                <!-- <div class="form-group">
+                    <label  for="">Imagen</label>
+                    <input class="form-control"  type="file" name="foto" id="foto" accept="image/*" >
+                </div> -->
+                <div class="form-group">
                   <label for="exampleInputEmail1">Precio</label>
                   <input  type="number" name="precio" class="form-control" id="exampleInputEmail1" aria-describedby="Precio" placeholder="Precio del Producto" step="0.01" min="0">
                   <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
@@ -146,6 +162,18 @@
                 <div class="form-group">
                   <label for="exampleInputEmail1">Precio</label>
                   <input v-model="productoSeleccionado.precio" type="number" name="precio" class="form-control" id="exampleInputEmail1" aria-describedby="Precio" placeholder="Precio del Producto" step="0.1" min="0">
+                  <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                </div>
+                <div class="form-group">
+                  <label for="exampleInputEmail1">Unidad De Medida</label>
+                  <!-- <input  type="number" name="tamaño" class="form-control" id="exampleInputEmail1" aria-describedby="Tamaño" placeholder="Tamaño del Producto" step="0.01" min="0"> -->
+                  <select v-model="productoSeleccionado.umed" class="form-control" name="umedEditar" id="umedEditar">
+                    <option value="mg">mg</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="ml">ml</option>
+                    <option value="l">l</option>
+                  </select>
                   <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
                 </div>
             </div>
@@ -214,10 +242,7 @@
 </template>
 
 <script>
-import {dbRefProductos, dbRefVentas, dbRefDeuda} from "../helpers/firebase"
-
-
-
+import {dbRefProductos, dbRefVentas, dbRefDeuda, storageRef} from "../helpers/firebase"
 
 export default {
   name: "productos",
@@ -252,6 +277,36 @@ export default {
     //       })
 
     // },
+    cadenaAleatoria() 
+    {
+      var text = "";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      for (var i = 0; i < 10; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+      return text;
+    },
+    subirImagen(file, nombre, tamaño)
+    {
+      // console.log('llega');
+      // let file = document.querySelector('input[type=file]').files[0];
+      let urlImg = 'productos/' + this.cadenaAleatoria() + '-' + nombre + '-' + tamaño
+      let src
+      console.log('subiendo!');
+      // console.log(file)
+      storageRef.child('productos/').put(file)
+      .then( (snapshot) => {
+          console.log(snapshot)
+          src = snapshot.downloadURL
+          console.log('Uploaded!');
+        })
+      .catch( (error) => {
+        console.log('error:')
+        console.log(error)
+      });
+      return src
+    },
     aumentarDeuda(precio)
     {
       dbRefDeuda.update({
@@ -261,7 +316,6 @@ export default {
       })
       .catch( () => {
         console.log('wrong update')
-        
       })
     },
     seleccionarProducto(accion, producto)
@@ -273,6 +327,9 @@ export default {
         this.$refs.botonMostrarModalBorrar.click()
       }else if(accion === 'editar')
       {
+        // console.log(this.productoSeleccionado)
+        document.getElementById("umedEditar").value = this.productoSeleccionado.umed
+        
         this.$refs.botonMostrarModalEditar.click()
       }else if(accion === 'comprar')
       {
@@ -298,11 +355,16 @@ export default {
     {
       // console.log("---------llega")
       let formData = new FormData(e.target);
+      // let file = formData.get("foto")
+      // console.log(file)
+      //  let imagen = this.subirImagen(file, formData.get("nombre"), formData.get("tamaño"))
       dbRefProductos
       .push({
           nombre: formData.get("nombre"),
           tamaño: formData.get("tamaño"),
+          umed: formData.get("umed"),
           precio: formData.get("precio")
+          // imagen
       })
       .then( ()=> this.setMensajes(true, "¡Producto agregado con exito!"))
       .catch( ()=> this.setMensajes(false, "¡No se pudo agregar el producto correctamente!"));
@@ -346,12 +408,14 @@ export default {
     editarProducto() 
     {
       // alert()
+      // umedEditar
       dbRefProductos
       .child(this.productoSeleccionado['.key'])
       .update({
         nombre: this.productoSeleccionado.nombre,
         tamaño: this.productoSeleccionado.tamaño,
-        precio: this.productoSeleccionado.precio
+        precio: this.productoSeleccionado.precio,
+        umed: this.productoSeleccionado.umed
       })
       this.$refs.botonCancelareditar.click()
       
