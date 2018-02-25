@@ -99,6 +99,7 @@ let todoCorrecto = false
 
 
 
+
 function login(to, from, next)
 {
   // console.log(todoCorrecto)
@@ -127,6 +128,10 @@ const router = new VueRouter({
 export default {
   name: 'app',
   router,
+  // firebase:
+  // {
+  //   usuario: firebase.auth().currentUser
+  // },
   components:
   {
     'productos': Productos,
@@ -141,6 +146,60 @@ export default {
       nombreUsuario: false,
       imagen: ''
     }
+  },
+  mounted()
+  {
+    // let user = firebase.auth().currentUser;
+    // console.log('usuario actual')
+    // console.log(user)
+
+    // if(user != null)
+    // {
+    //   this.idUsuario = user.uid
+    //   this.nombreUsuario = user.displayName
+    //   if (this.idUsuario === 'BzJUlIYvflZ5bviyI3SOE9zSRw32') 
+    //   {
+    //     console.log('>>USUARIO ES CRISMNV Y TODO BIEN')
+    //     this.logueado = true
+    //     todoCorrecto = true
+    //     this.$router.push('/ventas')
+          
+    //   }else{
+    //     console.log('>>USUARIO NO ES CRISMNV')
+    //     this.logueado = false
+    //     todoCorrecto = false  
+    //   }
+    // }else{
+    //   console.log('no hay ningun usuario logueado')
+    // }
+
+
+      firebase.auth()
+      .onAuthStateChanged((user) =>  {
+      if (user) {
+        // User is signed in.
+
+        // console.log('user is loged in')
+        // console.log(user)
+        this.idUsuario = user.uid
+        this.nombreUsuario = user.displayName
+        if (this.idUsuario === 'BzJUlIYvflZ5bviyI3SOE9zSRw32') 
+        {
+          // console.log('>>USUARIO ES CRISMNV Y TODO BIEN')
+          this.logueado = true
+          todoCorrecto = true
+          // this.$router.push('/ventas')
+            
+        }else{
+          // console.log('>>USUARIO NO ES CRISMNV')
+          this.logueado = false
+          todoCorrecto = false  
+        }
+      } else {
+        // No user is signed in.
+        console.log('user is not loged in')
+      }
+    });
   },
   methods:
   {
@@ -165,49 +224,89 @@ export default {
     },
     login()
     {
-      var provider = new firebase.auth.GoogleAuthProvider();
 
-      firebase.auth().signInWithPopup(provider)
-      .then( (result) => {
+      var provider = new firebase.auth.GoogleAuthProvider();
+      // In memory persistence will be applied to the signed in Google user
+      // even though the persistence was set to 'none' and a page redirect
+      // occurred.
+      firebase.auth().signInWithPopup(provider).then( (result) => {
         // // This gives you a Google Access Token. You can use it to access the Google API.
         // var token = result.credential.accessToken;
         // // The signed-in user info.
-        var user = result.user;
-        // console.log(">>>>>USER<<<<<<")
+        // console.log('>>EL RESULT ES:')
+        // console.log(result)
+        var user = result.user
+        // console.log('>>EL USUARIO ES:')
         // console.log(user)
-        // console.log(">>>>>FIN-USER<<<<<<")
-
+        
         this.idUsuario = user.uid
         this.nombreUsuario = user.displayName
-
         if (this.idUsuario === 'BzJUlIYvflZ5bviyI3SOE9zSRw32') 
         {
+          console.log('>>USUARIO ES CRISMNV Y TODO BIEN')
           this.logueado = true
           todoCorrecto = true  
         }else{
+          console.log('>>USUARIO NO ES CRISMNV')
           this.logueado = false
           todoCorrecto = false  
         }
-        // this.logueado = true
-        // ...
         this.$router.push('/ventas')
         
-      })
-      .catch( (error) =>  {
-
-        // console.log("NO SE PUDO LOGUEAR")
-        // // Handle Errors here.
-        // var errorCode = error.code;
-        // var errorMessage = error.message;
-        // // The email of the user's account used.
-        // var email = error.email;
-        // // The firebase.auth.AuthCredential type that was used.
-        // var credential = error.credential;
+      }).catch( (error) =>  {
+        console.log('>>ERROR AL LOGUEAR')
+        console.log(error)
         this.logueado = false
         this.idUsuario = false
         todoCorrecto = false  
         // ...
       });
+
+      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+      .then(function() {
+        console.log('logrado')
+        })
+      .catch(function(error) {
+        // Handle Errors here.
+        
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        console.log('NO SE PUDO ESTABLECER LA PERSISTENCIA, EL ERROR ES:')
+        console.log(errorMessage)
+      });
+
+
+
+      // var provider = new firebase.auth.GoogleAuthProvider();
+      // firebase.auth().signInWithPopup(provider)
+      // .then( (result) => {
+      //   // // This gives you a Google Access Token. You can use it to access the Google API.
+      //   // var token = result.credential.accessToken;
+      //   // // The signed-in user info.
+      //   var user = result.user;
+
+      //   this.idUsuario = user.uid
+      //   this.nombreUsuario = user.displayName
+
+      //   if (this.idUsuario === 'BzJUlIYvflZ5bviyI3SOE9zSRw32') 
+      //   {
+      //     this.logueado = true
+      //     todoCorrecto = true  
+      //   }else{
+      //     this.logueado = false
+      //     todoCorrecto = false  
+      //   }
+      //   this.$router.push('/ventas')
+        
+      // })
+      // .catch( (error) =>  {
+      //   this.logueado = false
+      //   this.idUsuario = false
+      //   todoCorrecto = false  
+      //   // ...
+      // });
+
+
     },
     logout()
     {

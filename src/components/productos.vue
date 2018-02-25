@@ -1,5 +1,5 @@
 <template>
-   <div class="col-sm-10 offset-sm-1">
+   <div>
      <div class="container">
      <div class="row" id="cabecera">
       <div class="col-sm-4">
@@ -22,6 +22,10 @@
       <br>
       <!-- <br> -->
       <hr>
+      <!-- <button 
+      class="btn col-sm-6 offset-sm-3 btn-block" 
+      @click="probarBusqueda">
+      Buscar?</button> -->
       <div id="alertas" class="row">
         <div v-if="mensajeExito" class="alert text-center font-weight-bold col-sm-12 alert-danger" role="alert">
           {{mensajeExito}}
@@ -219,14 +223,13 @@ export default {
   name: "productos",
   firebase: 
   {
-    productos: dbRefProductos
-    .orderByValue(),
+    productos: dbRefProductos,
     deuda: dbRefDeuda
   },
   mounted()
   {
-    console.log(">>>>>>>>>>>>>>>>>>>")
-    console.log(this.deuda)
+    // console.log(">>>>>>>>>>>>>>>>>>>")
+    // console.log(this.deuda)
   },
   data() {
     return {
@@ -236,6 +239,19 @@ export default {
     };
   },
   methods: {
+    // probarBusqueda()
+    // {
+    //     // alert()
+    //     console.log(this.productos)
+    //     console.log('despues de recuperar')
+        
+    //     dbRefProductos.limitToLast(3).on('value', (snapshot) =>{
+    //         console.log(snapshot.val())
+    //         this.$firebaseRefs.productos = snapshot.val()
+    //         // console.log(this.productos)
+    //       })
+
+    // },
     aumentarDeuda(precio)
     {
       dbRefDeuda.update({
@@ -272,6 +288,7 @@ export default {
         this.mensajeExito = mensaje
       }
 
+      this.productoSeleccionado = false
       setTimeout(() => {
         this.mensajeExito = false;
         this.mensajeError = false;
@@ -289,8 +306,9 @@ export default {
       })
       .then( ()=> this.setMensajes(true, "¡Producto agregado con exito!"))
       .catch( ()=> this.setMensajes(false, "¡No se pudo agregar el producto correctamente!"));
-
-      
+      document.getElementsByName("nombre")[0].value = ''
+      document.getElementsByName("precio")[0].value = 0
+      document.getElementsByName("tamaño")[0].value = 0
       this.$refs.botonCancelarAgregar.click()
       
     },

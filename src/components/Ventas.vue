@@ -45,7 +45,7 @@
           <thead class="thead-default">
             <tr class="">
               <th class="align-middle">Nombre</th>
-              <th class="align-middle">Cantidad</th>
+              <th class="align-middle">Tamaño</th>
               <th class="align-middle">Precio</th>
               <th class="align-middle">Fecha</th>
               <th class="align-middle">Hora</th>
@@ -145,12 +145,12 @@ export default {
   //     return
   //   }
   // },
-  beforeMount()
-  {
-    console.log("--deuda--")
-    console.log(this.deuda)
+  // beforeMount()
+  // {
+  //   console.log("--deuda--")
+  //   console.log(this.deuda)
     
-  },
+  // },
   methods: 
   {
     cancelarDeuda()
